@@ -25,9 +25,21 @@ A ausência de conversão cambial ou *hedge* distorce severamente a matriz de ri
 O motor de otimização deste projeto utiliza a simulação estocástica (Monte Carlo) para gerar milhares de combinações aleatórias de pesos e mapear a Fronteira Eficiente. Este método é extremamente rápido e visualmente didático para portfólios focados (idealmente entre 5 e 15 ativos). 
 No entanto, ao inserir um número massivo de ativos (ex: 50 ações), o algoritmo esbarra na "Maldição da Dimensionalidade". O espaço geométrico de combinações possíveis cresce de forma exponencial, fazendo com que 25.000 simulações se tornem uma amostra estatisticamente irrelevante para encontrar o verdadeiro cume do Índice de Sharpe. Para otimização de dezenas ou centenas de ativos, a abordagem ideal exigiria a substituição deste motor estocástico por um solucionador de programação quadrática (convex optimization), garantindo a convergência matemática exata.
 
+## 📂 Estrutura do Repositório
+
+├── froteira_eficiente.py              # Aplicação principal (Motor Vetorizado + Interface Streamlit)
+├── requirements.txt                   # Mapeamento estrito de dependências
+├── Teoria Moderna do Portfólio.pdf                   # Resumo Executivo e Metodologia (Slides)
+
 ## 🛠️ Como Executar Localmente
 
 1. **Clone o repositório:**
 ```bash
-git clone [https://github.com/SEU_USUARIO/otimizador-portfolio.git](https://github.com/SEU_USUARIO/otimizador-portfolio.git)
-cd otimizador-portfolio
+git clone [https://github.com/linkiiil/fronteira_eficiente.git](https://github.com/linkiiil/fronteira_eficiente.git)
+cd fronteira_eficiente
+
+Bash
+pip install -r requirements.txt
+
+Bash
+streamlit run fronteira_eficiente.py
