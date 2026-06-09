@@ -5,7 +5,7 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 
-# Configuração da página - Interface limpa, funcional e profissional
+# Configuração da página 
 st.set_page_config(page_title="Otimizador de Carteiras - Fronteira Eficiente", layout="wide")
 
 # Customização estética básica via CSS para manter o design minimalista
@@ -128,7 +128,7 @@ if st.sidebar.button("⚙️ Executar Otimização Vetorizada", use_container_wi
                         mode='markers', marker=dict(color='red', size=14, symbol='star'),
                         name='Máximo Sharpe'
                     ))
-                    fig_fronteira.update_layout(template="minimalist")
+                    fig_fronteira.update_layout(template="plotly_white")
                     st.plotly_chart(fig_fronteira, use_container_width=True)
                     
                 with col_direita:
@@ -150,7 +150,7 @@ if st.sidebar.button("⚙️ Executar Otimização Vetorizada", use_container_wi
                         title="Composição Percentual da Carteira",
                         color_discrete_sequence=px.colors.sequential.Slate
                     )
-                    fig_rosca.update_layout(template="minimalist")
+                    fig_rosca.update_layout(template="plotly_white")
                     st.plotly_chart(fig_rosca, use_container_width=True)
                 
                 st.markdown("---")
@@ -172,11 +172,11 @@ if st.sidebar.button("⚙️ Executar Otimização Vetorizada", use_container_wi
                         mode='lines', name=acao, line=dict(width=1, dash='dash')
                     ))
                     
-                fig_linha.update_layout(
-                    title="Evolução Comparativa de um Aporte Inicial de $100",
-                    xaxis_title="Data", yaxis_title="Valor do Património Equivalente ($)",
-                    template="minimalist"
-                )
+                    fig_linha.update_layout(
+                        title="Evolução Comparativa de um Aporte Inicial de $100",
+                        xaxis_title="Data", yaxis_title="Valor do Patrimônio Equivalente ($)",
+                        template="plotly_white"
+                    )
                 st.plotly_chart(fig_linha, use_container_width=True)
                 
             except Exception as e:
