@@ -148,7 +148,7 @@ if st.sidebar.button("⚙️ Executar Otimização Vetorizada", use_container_wi
                     fig_rosca = px.pie(
                         names=ativos, values=pesos_otimos, hole=0.4,
                         title="Composição Percentual da Carteira",
-                        color_discrete_sequence=px.colors.sequential.Slate
+                        color_discrete_sequence=px.colors.sequential.Blues
                     )
                     fig_rosca.update_layout(template="plotly_white")
                     st.plotly_chart(fig_rosca, use_container_width=True)
