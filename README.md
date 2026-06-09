@@ -28,8 +28,10 @@ No entanto, ao inserir um número massivo de ativos (ex: 50 ações), o algoritm
 ## 📂 Estrutura do Repositório
 
 ├── froteira_eficiente.py              # Aplicação principal (Motor Vetorizado + Interface Streamlit)
+
 ├── requirements.txt                   # Mapeamento estrito de dependências
-├── Teoria Moderna do Portfólio.pdf                   # Resumo Executivo e Metodologia (Slides)
+
+├── Teoria Moderna do Portfólio.pdf    # Resumo Executivo e Metodologia (Slides)
 
 ## 🛠️ Como Executar Localmente
 
