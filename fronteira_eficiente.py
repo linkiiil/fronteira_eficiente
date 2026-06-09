@@ -5,7 +5,7 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 
-# Configuração da página 
+# Configuração da página - Interface limpa, funcional e profissional
 st.set_page_config(page_title="Otimizador de Carteiras - Fronteira Eficiente", layout="wide")
 
 # Customização estética básica via CSS para manter o design minimalista
@@ -101,7 +101,7 @@ if st.sidebar.button("⚙️ Executar Otimização Vetorizada", use_container_wi
                 # --- VISUALIZAÇÃO DOS RESULTADOS ---
                 st.success("Cálculos concluídos com sucesso!")
                 
-                # Métricas Principais da Carteira Ótima
+                # Métricas Principais da Carteira Ótima (Sempre visíveis no topo)
                 c1, c2, c3 = st.columns(3)
                 with c1:
                     st.metric("Retorno Esperado do Portfólio", f"{carteira_ideal['Retorno']:.2%}")
@@ -112,73 +112,75 @@ if st.sidebar.button("⚙️ Executar Otimização Vetorizada", use_container_wi
                 
                 st.markdown("---")
                 
-                # Organização do Layout Central
-                col_esquerda, col_direita = st.columns([1.2, 1])
+                # CRIAÇÃO DAS ABAS (Separação estrutural de páginas virtuais)
+                tab_alocacao, tab_historico = st.tabs(["🎯 Alocação Ótima & Risco", "📈 Backtest Histórico (Base 100)"])
                 
-                with col_esquerda:
-                    st.subheader("🎯 A Fronteira Eficiente de Markowitz")
-                    fig_fronteira = px.scatter(
-                        df_simulacoes, x='Volatilidade', y='Retorno', color='Sharpe',
-                        labels={'Volatilidade': 'Volatilidade Anualizada (Risco)', 'Retorno': 'Retorno Esperado'},
-                        color_continuous_scale='Viridis', title="Mapeamento de Alocações Possíveis"
-                    )
-                    # Destacar a carteira de Máximo Sharpe
-                    fig_fronteira.add_trace(go.Scatter(
-                        x=[carteira_ideal['Volatilidade']], y=[carteira_ideal['Retorno']],
-                        mode='markers', marker=dict(color='red', size=14, symbol='star'),
-                        name='Máximo Sharpe'
-                    ))
-                    fig_fronteira.update_layout(template="plotly_white")
-                    st.plotly_chart(fig_fronteira, use_container_width=True)
+                # --- ABA 1: ALOCAÇÃO E RISCO ---
+                with tab_alocacao:
+                    col_esquerda, col_direita = st.columns([1.2, 1])
                     
-                with col_direita:
-                    st.subheader("💰 Distribuição Sugerida do Aporte")
+                    with col_esquerda:
+                        st.subheader("🎯 A Fronteira Eficiente de Markowitz")
+                        fig_fronteira = px.scatter(
+                            df_simulacoes, x='Volatilidade', y='Retorno', color='Sharpe',
+                            labels={'Volatilidade': 'Volatilidade Anualizada (Risco)', 'Retorno': 'Retorno Esperado'},
+                            color_continuous_scale='Viridis', title="Mapeamento de Alocações Possíveis"
+                        )
+                        fig_fronteira.add_trace(go.Scatter(
+                            x=[carteira_ideal['Volatilidade']], y=[carteira_ideal['Retorno']],
+                            mode='markers', marker=dict(color='red', size=14, symbol='star'),
+                            name='Máximo Sharpe'
+                        ))
+                        fig_fronteira.update_layout(template="plotly_white")
+                        st.plotly_chart(fig_fronteira, use_container_width=True)
+                        
+                    with col_direita:
+                        st.subheader("💰 Distribuição Sugerida do Aporte")
+                        pesos_otimos = [carteira_ideal[acao] for acao in ativos]
+                        alocacao_dinheiro = [peso * valor_disponivel for peso in pesos_otimos]
+                        
+                        df_alocacao = pd.DataFrame({
+                            'Ativo': ativos,
+                            'Peso (%)': [f"{p:.2%}" for p in pesos_otimos],
+                            'Aporte Sugerido': [f"$ {v:,.2f}" for v in alocacao_dinheiro]
+                        })
+                        
+                        st.dataframe(df_alocacao, use_container_width=True, hide_index=True)
+                        
+                        fig_rosca = px.pie(
+                            names=ativos, values=pesos_otimos, hole=0.4,
+                            title="Composição Percentual da Carteira",
+                            color_discrete_sequence=px.colors.qualitative.Pastel
+                        )
+                        fig_rosca.update_layout(template="plotly_white")
+                        st.plotly_chart(fig_rosca, use_container_width=True)
+                
+                # --- ABA 2: EVOLUÇÃO HISTÓRICA COMPLETA ---
+                with tab_historico:
+                    st.subheader("📈 Crescimento Histórico Simulado da Carteira Ótima")
                     pesos_otimos = [carteira_ideal[acao] for acao in ativos]
-                    alocacao_dinheiro = [peso * valor_disponivel for peso in pesos_otimos]
+                    precos_normalizados = precos_df / precos_df.iloc[0]
+                    carteira_base_100 = (precos_normalizados * np.array(pesos_otimos)).sum(axis=1) * 100
                     
-                    df_alocacao = pd.DataFrame({
-                        'Ativo': ativos,
-                        'Peso (%)': [f"{p:.2%}" for p in pesos_otimos],
-                        'Aporte Sugerido': [f"$ {v:,.2f}" for v in alocacao_dinheiro]
-                    })
-                    
-                    st.dataframe(df_alocacao, use_container_width=True, hide_index=True)
-                    
-                    # Gráfico de Distribuição Percentual
-                    fig_rosca = px.pie(
-                        names=ativos, values=pesos_otimos, hole=0.4,
-                        title="Composição Percentual da Carteira",
-                        color_discrete_sequence=px.colors.sequential.Blues
-                    )
-                    fig_rosca.update_layout(template="plotly_white")
-                    st.plotly_chart(fig_rosca, use_container_width=True)
-                
-                st.markdown("---")
-                
-                # Evolução Histórica Base-100 (Uso dos pesos ótimos aplicados ao histórico)
-                st.subheader("📈 Crescimento Histórico Simulado da Carteira Ótima (Base 100)")
-                precos_normalizados = precos_df / precos_df.iloc[0]
-                carteira_base_100 = (precos_normalizados * np.array(pesos_otimos)).sum(axis=1) * 100
-                
-                fig_linha = go.Figure()
-                fig_linha.add_trace(go.Scatter(
-                    x=carteira_base_100.index, y=carteira_base_100.values,
-                    mode='lines', name='PORTFÓLIO ÓTIMO', line=dict(color='#1f77b4', width=3.5)
-                ))
-                
-                for acao in ativos:
+                    fig_linha = go.Figure()
                     fig_linha.add_trace(go.Scatter(
-                        x=precos_normalizados.index, y=precos_normalizados[acao].values * 100,
-                        mode='lines', name=acao, line=dict(width=1, dash='dash')
+                        x=carteira_base_100.index, y=carteira_base_100.values,
+                        mode='lines', name='PORTFÓLIO ÓTIMO', line=dict(color='#1f77b4', width=3.5)
                     ))
                     
+                    for acao in ativos:
+                        fig_linha.add_trace(go.Scatter(
+                            x=precos_normalizados.index, y=precos_normalizados[acao].values * 100,
+                            mode='lines', name=acao, line=dict(width=1, dash='dash')
+                        ))
+                        
                     fig_linha.update_layout(
-                        title="Evolução Comparativa de um Aporte Inicial de $100",
+                        title="Evolução Comparativa de um Aporte Inicial Equivalente a $100",
                         xaxis_title="Data", yaxis_title="Valor do Patrimônio Equivalente ($)",
                         template="plotly_white"
                     )
-                st.plotly_chart(fig_linha, use_container_width=True)
-                
+                    st.plotly_chart(fig_linha, use_container_width=True)
+                    
             except Exception as e:
                 st.error(f"Erro na execução dos cálculos ou download dos ativos: {str(e)}")
-                st.info("Dica: Verifique se os códigos dos tickers estão corretos e no padrão do Yahoo Finance (ex: ativos brasileiros exigem '.SA').")
+                st.info("Dica: Verifique se os códigos dos tickers estão corretos e no padrão do Yahoo Finance.")
