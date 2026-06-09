@@ -29,9 +29,9 @@ ativos = [t.strip().upper() for t in tickers_input.split(",") if t.strip()]
 # Período de análise histórica
 col_data1, col_data2 = st.sidebar.columns(2)
 with col_data1:
-    data_inicio = st.date_input("Data de Início:", pd.to_datetime("2021-01-01"))
+    data_inicio = st.date_input("Data de Início:", pd.to_datetime("2021-01-01"), format="DD/MM/YYYY")
 with col_data2:
-    data_fim = st.date_input("Data de Fim:", pd.to_datetime("today"))
+    data_fim = st.date_input("Data de Fim:", pd.to_datetime("today"), format="DD/MM/YYYY")
 
 # Parâmetros financeiros do investidor
 valor_disponivel = st.sidebar.number_input("Capital Total para Alocação ($):", min_value=1000, value=10000, step=1000)
@@ -39,11 +39,12 @@ valor_disponivel = st.sidebar.number_input("Capital Total para Alocação ($):",
 # Procurar dinamicamente a Taxa Livre de Risco (10-Year Treasury Yield ^TNX)
 try:
     tnx = yf.download("^TNX", period="1d", progress=False)['Close']
-    tlr_atual = float(tnx.iloc[-1]) / 100 if not tnx.empty else 0.04
+    # Mantém em formato percentual (ex: 4.25) em vez de dividir por 100
+    tlr_atual = float(tnx.iloc[-1]) if not tnx.empty else 4.00
 except Exception:
-    tlr_atual = 0.04  # Fallback caso a API falhe ou esteja fora do horário
+    tlr_atual = 4.00  # Fallback caso a API falhe
 
-taxa_livre_risco = st.sidebar.slider("Taxa Livre de Risco Anual (TLR):", min_value=0.0, max_value=0.15, value=tlr_atual, step=0.0025, format="%.4f")
+taxa_livre_risco = st.sidebar.slider("Taxa Livre de Risco Anual (TLR) %:", min_value=0.0, max_value=20.0, value=tlr_atual, step=0.25, format="%.2f%%")
 num_simulacoes = st.sidebar.slider("Número de Simulações de Monte Carlo:", min_value=2000, max_value=25000, value=10000, step=1000)
 
 # Botão para executar a lógica
@@ -82,8 +83,10 @@ if st.sidebar.button("⚙️ Executar Otimização Vetorizada", use_container_wi
                 retornos_portfolios = np.dot(pesos_matriz, retornos_anuais)
                 variancias_portfolios = np.einsum('ij,jk,ik->i', pesos_matriz, cov_matrix.values, pesos_matriz)
                 volatilidades_portfolios = np.sqrt(variancias_portfolios)
-                
-                sharpe_ratios = (retornos_portfolios - taxa_livre_risco) / volatilidades_portfolios
+
+                # Converte a taxa de volta para decimal apenas para a matemática
+                taxa_livre_risco_decimal = taxa_livre_risco / 100
+                sharpe_ratios = (retornos_portfolios - taxa_livre_risco_decimal) / volatilidades_portfolios
                 
                 # Consolidação dos resultados das simulações
                 df_simulacoes = pd.DataFrame({
